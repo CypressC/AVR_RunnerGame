@@ -1,10 +1,16 @@
 ;================================================================
 .org 0
 	  JMP MAIN
-.org 2
-	  JMP INT0_ISR
+.org 0x04
+	  JMP INT1_ISR
 ;================================================================
+.org $150
 MAIN:
+	  LDI R16,HIGH(RAMEND)
+	  OUT SPH,R16
+	  LDI R20,LOW(RAMEND)  
+	  OUT SPL,R16			  ;initialize stack
+
       LDI   R16, 0xF0
       OUT   DDRD, R16         ;set ports D4-D7 o/p for data
 	  LDI	R16, 0x03
@@ -14,7 +20,7 @@ MAIN:
       ;-----------------------------------------------------
       RCALL LCD_init          ;subroutine to initialize LCD
       ;-----------------------------------------------------
-	  LDI R20,0				  ;holds the scene
+	  ;LDI R20,0				  ;holds the scene
 	  ;-----------------------------------------------------
 again:RCALL start      ;subroutine to display message
       ;-----------------------------------------------------
@@ -171,6 +177,7 @@ l2:   RCALL delay_seconds
 
 	  ;=====================================================
 end_game:
+	  CLI
 	  RCALL LCD_init
 	  LDI   R16, ' '
       RCALL data_wrt
@@ -259,17 +266,44 @@ gameplay:
       ;-----------------------------------------------------
       RCALL LCD_init          ;subroutine to initialize LCD
 	 ;-----------------------------------------------------
+	  LDI R20, 0
+	  LDI R24, 0xC0
+	  LDI R25, 0x80 ;set start position
 	  LDI R23,0x80			;set player origin
-	  LDI R18 , 100
-return:				;subroutine to display message
+	  ;LDI R18 , 10 
+	  LDI R20,HIGH(7812) ;the high byte  
+	  STS OCR1AH,R20 ;Temp = 0x3D (high byte of 15624)  
+	  LDI R20,LOW(7812) ;the low byte  
+	  STS OCR1AL,R20 ;OCR1A = 15624  
+	  LDI R20,0x00  
+	  STS TCCR1A,R20  
+	  LDI R20,0xD  
+	  STS TCCR1B,R20 ;prescaler 1:1024, CTC mode  
+	  LDI R20,(1<<OCIE1A)  
+	  STS TIMSK1,R20 ;enable Timer1 compare match interrupt  
+	  LDI R23, (1<<ISC11)
+	  STS EICRA, R23 ;check
+	  SBI PORTD, 2
+	  LDI R23,1<<INT1 ; EDGE TRIGGERED
+	  OUT EIMSK, R23 ; check
+	  SEI ;set I (enable interrupts globally) 
 	  RCALL generate_terrain
-	  RCALL generate_bro
+	  LDI R16, 0x80
+	  RCALL command_wrt
+
+return:				;subroutine to display message
+	  
+	  ;RCALL generate_bro
 	  LDI R16, 0x18
 	  RCALL command_wrt
+	  LDI R16, 0x14
+	  RCALL command_wrt
+	  RCALL delay_seconds
+	  INC R20
+HERE: 
 	  SBIC PIND,2			  ;check if button is pressed
-	  RCALL end_game		  ; IF button is pressed jump to next screen
-	  DEC R18
-	  BRNE return
+	  RCALL end_game
+	  RCALL return		  ; IF button is pressed jump to next screen
 	  RET
 
 generate_bro:
@@ -289,42 +323,41 @@ generate_terrain:
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-      RCALL delay_seconds     ;delay 0.25s
+      ;----------------------------------------------------------------
 	  LDI R16, 0xC9
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-      RCALL delay_seconds
+      ;-----------------------------------------------------------------
 	  LDI R16, 0xCA
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-      RCALL delay_seconds     ;delay 0.25s
+      ;-----------------------------------------------------------------
 	  LDI R16, 0xCB
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-      RCALL delay_seconds
+      ;------------------------------------------------------------------
 	  LDI R16, 0x84
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-      RCALL delay_seconds     ;delay 0.25s
+      ;------------------------------------------------------------------
 	  LDI R16, 0x85
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-      RCALL delay_seconds
+      ;------------------------------------------------------------------
 	  LDI R16, 0x86
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-      RCALL delay_seconds     ;delay 0.25s
+      ;------------------------------------------------------------------
 	  LDI R16, 0x87
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-      RCALL delay_seconds
 	  RET
 
 ;========================================================================
@@ -338,7 +371,7 @@ l8: SBIC EECR, 1
     LDI   R17, 0x5F         ;low byte of address 005FH
     OUT   EEARH, R18        ;store high byte of address       
     OUT   EEARL, R17        ;store low byte of address
-    LDI   R16, 0b11001101   ;byte to be written to EEPROM
+    ;LDI   R16, 0b11001101   ;byte to be written to EEPROM
     OUT   EEDR, R16         ;via data reg
     SBI   EECR, 2           ;EEMWE = 1
     SBI   EECR, 1           ;EEWE = 1: write byte to EEPROM
@@ -387,8 +420,30 @@ l7: DEC   R22         ;decrement inner loop
     BRNE  l5          ;loop if not zero
     RET               ;return to caller
 ;----------------------------------------------------------------
-.org $200
-INT0_ISR:
-	  
+.org $300
+INT1_ISR:
+	MOV R16, R24
+	RCALL command_wrt
+	LDI R16, ' '
+	RCALL data_wrt
+	;RCALL delay_seconds
+	MOV R16, R25
+	RCALL command_wrt
+	LDI R16, 0b10101011
+	RCALL data_wrt
+	LDI R26, (1<<ISC11)
+	STS EICRA, R26 ;CHECK
+	SBI PORTD, 2
+	LDI R23,1<<INT1 ; EDGE TRIGGERED
+	OUT EIMSK, R26 ; CHECK
+	SEI ; ENABLE INTERUPTS
+	MOV R26, R24
+	MOV R24, R25 
+	MOV R25, R26 ;SWAP POSITION
+	RCALL delay_seconds
+	RETI
 
-	  RETI
+;---ISR for Timer1 (It comes here after elapse of 1 second time)  
+T1_CM_ISR:  
+	   
+	  RETI ;return from interrupt
