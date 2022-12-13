@@ -277,7 +277,7 @@ gameplay:
 	  LDI R20,0xD  
 	  STS TCCR1B,R20 ;prescaler 1:1024, CTC mode  
 	  LDI R20,(1<<OCIE1A)  
-	  STS TIMSK1,R20 ;enable Timer1 compare match interrupt  
+	  ;STS TIMSK1,R20 ;enable Timer1 compare match interrupt  
 	  LDI R23, (1<<ISC11)
 	  STS EICRA, R23 ;check
 	  SBI PORTD, 2
@@ -452,15 +452,15 @@ INT1_ISR:
 	RCALL command_wrt
 	LDI R16, 0b10101011
 	RCALL data_wrt
-	LDI R26, (1<<ISC11)
-	STS EICRA, R26 ;CHECK
+	LDI R23, (1<<ISC11)
+	STS EICRA, R23 ;CHECK
 	SBI PORTD, 2
 	LDI R23,1<<INT1 ; EDGE TRIGGERED
-	OUT EIMSK, R26 ; CHECK
+	OUT EIMSK, R23 ; CHECK
 	;SEI ; ENABLE INTERUPTS
-	MOV R26, R24
+	MOV R23, R24
 	MOV R24, R25 
-	MOV R25, R26 ;SWAP POSITION
+	MOV R25, R23 ;SWAP POSITION
 	RCALL delay_seconds
 	RETI
 
