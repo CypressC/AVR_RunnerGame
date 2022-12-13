@@ -20,8 +20,6 @@ MAIN:
       ;-----------------------------------------------------
       RCALL LCD_init          ;subroutine to initialize LCD
       ;-----------------------------------------------------
-	  ;LDI R20,0				  ;holds the scene
-	  ;-----------------------------------------------------
 again:RCALL start      ;subroutine to display message
       ;-----------------------------------------------------
       LDI   R16, 0x01         ;clear LCD
@@ -266,7 +264,6 @@ gameplay:
       ;-----------------------------------------------------
       RCALL LCD_init          ;subroutine to initialize LCD
 	 ;-----------------------------------------------------
-	  LDI R20, 0
 	  LDI R24, 0xC0
 	  LDI R25, 0x80 ;set start position
 	  LDI R23,0x80			;set player origin
@@ -287,77 +284,101 @@ gameplay:
 	  LDI R23,1<<INT1 ; EDGE TRIGGERED
 	  OUT EIMSK, R23 ; check
 	  SEI ;set I (enable interrupts globally) 
-	  RCALL generate_terrain
-	  LDI R16, 0x80
-	  RCALL command_wrt
-
-return:				;subroutine to display message
+	  LDI R17,0x15
+reset:	
+	  LDI R18, 0
 	  
-	  ;RCALL generate_bro
-	  LDI R16, 0x18
-	  RCALL command_wrt
-	  LDI R16, 0x14
-	  RCALL command_wrt
+return:				;subroutine to display message  
+	  RCALL generate_top
 	  RCALL delay_seconds
-	  INC R20
-HERE: 
+	  RCALL delay_seconds
+	  INC R18
+	  CP R17,R18	 ;checks if obstacles are clear of screen
+	  BREQ reset	 ;resets counter
 	  SBIC PIND,2			  ;check if button is pressed
-	  RCALL end_game
-	  RCALL return		  ; IF button is pressed jump to next screen
+	  RCALL end_game ; IF button is pressed jump to next screen  
+	  RCALL return
+
+	  generate_top:
+	  LDI R16, 0x8F
+	  SUB R16,R18
+	  RCALL command_wrt
+      LDI   R16, 0b11111111          ;display characters
+      RCALL data_wrt          ;via data register
+	  RCALL delay_short
+      ;------------------------------------------------------------------
+	  LDI R16, 0x91
+	  SUB R16,R18
+	  RCALL command_wrt
+      LDI   R16, 0b11111111          ;display characters
+      RCALL data_wrt          ;via data register
+	  RCALL delay_short
+      ;------------------------------------------------------------------
+	  LDI R16, 0x92
+	  SUB R16,R18
+	  RCALL command_wrt
+      LDI   R16, 0b11111111          ;display characters
+      RCALL data_wrt          ;via data register
+	  RCALL delay_short
+      ;------------------------------------------------------------------
+	  LDI R16, 0x93
+	  SUB R16,R18
+	  RCALL command_wrt
+      LDI   R16, 0b11111111          ;display characters
+      RCALL data_wrt          ;via data register
+	  RCALL delay_short
+	  ;-----------------------------------------------------------------
+	  LDI R16, 0x94
+	  SUB R16,R18
+	  RCALL command_wrt
+	  LDI R16, ' '
+	  RCALL data_wrt
+	  ;-----------------------------------------------------------------
+	  LDI R16, 0x95
+	  SUB R16,R18
+	  RCALL command_wrt
+	  LDI R16, ' '
+	  RCALL data_wrt
+	  ;-----------------------------------------------------------------
 	  RET
 
-generate_bro:
-	  MOV R16,R23
-	  RCALL command_wrt
-	  LDI R16,' '
-	  RCALL data_wrt
-	  INC R23
-	  MOV R16,R23
-	  RCALL command_wrt
-	  LDI R16,0b10101011
-	  RCALL data_wrt
-	  RET
-
-generate_terrain:
-	  LDI R16, 0xC8
+generate_bot:
+	  LDI R16, 0xD0
+	  SUB R16,R18
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
       ;----------------------------------------------------------------
-	  LDI R16, 0xC9
+	  LDI R16, 0xD1
+	  SUB R16,R18
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
       ;-----------------------------------------------------------------
-	  LDI R16, 0xCA
+	  LDI R16, 0xD2
+	  SUB R16,R18
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
       ;-----------------------------------------------------------------
-	  LDI R16, 0xCB
+	  LDI R16, 0xD3
+	  SUB R16,R18
 	  RCALL command_wrt
       LDI   R16, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-      ;------------------------------------------------------------------
-	  LDI R16, 0x84
+      ;-----------------------------------------------------------------
+	  LDI R16, 0xD4
+	  SUB R16,R18
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
-      RCALL data_wrt          ;via data register
-      ;------------------------------------------------------------------
-	  LDI R16, 0x85
+	  LDI R16, ' '
+	  RCALL data_wrt
+	  ;-----------------------------------------------------------------
+	  LDI R16, 0xD5
+	  SUB R16,R18
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
-      RCALL data_wrt          ;via data register
-      ;------------------------------------------------------------------
-	  LDI R16, 0x86
-	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
-      RCALL data_wrt          ;via data register
-      ;------------------------------------------------------------------
-	  LDI R16, 0x87
-	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
-      RCALL data_wrt          ;via data register
+	  LDI R16, ' '
+	  RCALL data_wrt
+	  ;-----------------------------------------------------------------
 	  RET
 
 ;========================================================================
@@ -436,7 +457,7 @@ INT1_ISR:
 	SBI PORTD, 2
 	LDI R23,1<<INT1 ; EDGE TRIGGERED
 	OUT EIMSK, R26 ; CHECK
-	SEI ; ENABLE INTERUPTS
+	;SEI ; ENABLE INTERUPTS
 	MOV R26, R24
 	MOV R24, R25 
 	MOV R25, R26 ;SWAP POSITION
