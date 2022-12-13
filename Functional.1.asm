@@ -1,3 +1,8 @@
+;
+; FinalProject.asm
+;
+; Created: 12/2/2022 8:38:44 PM
+; Author : Cypress
 ;================================================================
 .org 0
 	  JMP MAIN
@@ -6,15 +11,15 @@
 ;================================================================
 .org $150
 MAIN:
-	  LDI R16,HIGH(RAMEND)
-	  OUT SPH,R16
+	  LDI R30,HIGH(RAMEND)
+	  OUT SPH,R30
 	  LDI R20,LOW(RAMEND)  
-	  OUT SPL,R16			  ;initialize stack
+	  OUT SPL,R30			  ;initialize stack
 
-      LDI   R16, 0xF0
-      OUT   DDRD, R16         ;set ports D4-D7 o/p for data
-	  LDI	R16, 0x03
-      OUT   DDRB, R16         ;set port B0 and B1 o/p for command and B2-7 for input
+      LDI   R30, 0xF0
+      OUT   DDRD, R30         ;set ports D4-D7 o/p for data
+	  LDI	R30, 0x03
+      OUT   DDRB, R30         ;set port B0 and B1 o/p for command and B2-7 for input
       CBI   PORTB, 0          ;EN = 0
       RCALL delay_ms          ;wait for LCD power on
       ;-----------------------------------------------------
@@ -22,7 +27,7 @@ MAIN:
       ;-----------------------------------------------------
 again:RCALL start      ;subroutine to display message
       ;-----------------------------------------------------
-      LDI   R16, 0x01         ;clear LCD
+      LDI   R30, 0x01         ;clear LCD
       RCALL command_wrt       ;send command code
       RCALL delay_ms
       ;-----------------------------------------------------
@@ -34,26 +39,26 @@ l1:   RCALL delay_seconds
       RJMP  again             ;jump to again for another run
 ;================================================================
 LCD_init:
-      LDI   R16, 0x33         ;init LCD for 4-bit data
+      LDI   R30, 0x33         ;init LCD for 4-bit data
       RCALL command_wrt       ;send to command register
       RCALL delay_ms
-      LDI   R16, 0x32         ;init LCD for 4-bit data
+      LDI   R30, 0x32         ;init LCD for 4-bit data
       RCALL command_wrt
       RCALL delay_ms
-      LDI   R16, 0x28         ;LCD 2 lines, 5x7 matrix
+      LDI   R30, 0x28         ;LCD 2 lines, 5x7 matrix
       RCALL command_wrt
       RCALL delay_ms
-      LDI   R16, 0x0C         ;disp ON, cursor OFF
+      LDI   R30, 0x0C         ;disp ON, cursor OFF
       RCALL command_wrt
-      LDI   R16, 0x01         ;clear LCD
+      LDI   R30, 0x01         ;clear LCD
       RCALL command_wrt
       RCALL delay_ms
-      LDI   R16, 0x06         ;shift cursor right
+      LDI   R30, 0x06         ;shift cursor right
       RCALL command_wrt
       RET  
 ;================================================================
 command_wrt:
-      MOV   R27, R16
+      MOV   R27, R30
       ANDI  R27, 0xF0         ;mask low nibble & keep high nibble
       OUT   PORTD, R27        ;o/p high nibble to port D
       CBI   PORTB, 1          ;RS = 0 for command
@@ -62,7 +67,7 @@ command_wrt:
       CBI   PORTB, 0          ;EN = 0 for H-to-L pulse
       RCALL delay_us          ;delay in micro seconds
       ;----------------------------------------------------
-      MOV   R27, R16
+      MOV   R27, R30
       SWAP  R27               ;swap nibbles
       ANDI  R27, 0xF0         ;mask low nibble & keep high nibble
       OUT   PORTD, R27        ;o/p high nibble to port D
@@ -73,7 +78,7 @@ command_wrt:
       RET
 ;================================================================
 data_wrt:
-      MOV   R27, R16
+      MOV   R27, R30
       ANDI  R27, 0xF0         ;mask low nibble & keep high nibble
       OUT   PORTD, R27        ;o/p high nibble to port D
       SBI   PORTB, 1          ;RS = 1 for data
@@ -82,7 +87,7 @@ data_wrt:
       CBI   PORTB, 0          ;EN = 0 for H-to-L pulse
       RCALL delay_us          ;delay in micro seconds
       ;----------------------------------------------------
-      MOV   R27, R16
+      MOV   R27, R30
       SWAP  R27               ;swap nibbles
       ANDI  R27, 0xF0         ;mask low nibble & keep high nibble
       OUT   PORTD, R27        ;o/p high nibble to port D
@@ -93,74 +98,74 @@ data_wrt:
       RET
 ;================================================================
 start:
-      LDI   R16, 'P'          ;start screen
+      LDI   R30, 'P'          ;start screen
       RCALL data_wrt          ;via data register
       RCALL delay_seconds     ;delay 0.25s
-      LDI   R16, 'r'
+      LDI   R30, 'r'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 'e'
+      LDI   R30, 'e'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 's'
+      LDI   R30, 's'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 's'
+      LDI   R30, 's'
 	  RCALL data_wrt
       RCALL delay_seconds
       ;----------------
-      LDI   R16, ' '
+      LDI   R30, ' '
       RCALL data_wrt
       ;----------------
-      LDI   R16, 'b'
+      LDI   R30, 'b'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 'u'
+      LDI   R30, 'u'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 't'
+      LDI   R30, 't'
       RCALL data_wrt
 	  RCALL delay_seconds
-	  LDI   R16, 't'
+	  LDI   R30, 't'
       RCALL data_wrt
 	  RCALL delay_seconds
-	  LDI   R16, 'o'
+	  LDI   R30, 'o'
       RCALL data_wrt
 	  RCALL delay_seconds
-	  LDI   R16, 'n'
+	  LDI   R30, 'n'
       RCALL data_wrt
       RCALL delay_seconds
       ;----------------
-      LDI   R16, 0xC0         ;cursor beginning of 2nd line
+      LDI   R30, 0xC0         ;cursor beginning of 2nd line
       RCALL command_wrt
       RCALL delay_ms
       ;----------------
-      LDI   R16, 't'
+      LDI   R30, 't'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 'o'
+      LDI   R30, 'o'
       RCALL data_wrt
       RCALL delay_seconds
 	  ;----------------
-      LDI   R16, ' '
+      LDI   R30, ' '
       RCALL data_wrt
       ;----------------
-      LDI   R16, 'b'
+      LDI   R30, 'b'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 'e'
+      LDI   R30, 'e'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 'g'
+      LDI   R30, 'g'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 'i'
+      LDI   R30, 'i'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 'n'
+      LDI   R30, 'n'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, '!'
+      LDI   R30, '!'
       RCALL data_wrt
 	  RCALL delay_seconds
 	  
@@ -177,87 +182,89 @@ l2:   RCALL delay_seconds
 end_game:
 	  CLI
 	  RCALL LCD_init
-	  LDI   R16, ' '
+	  LDI   R30, ' '
       RCALL data_wrt
       ;----------------
-	  LDI   R16, ' '
+	  LDI   R30, ' '
       RCALL data_wrt
       ;----------------
-	  LDI   R16, ' '
+	  LDI   R30, ' '
       RCALL data_wrt
       ;----------------
-	  LDI   R16, 'G'
+	  LDI   R30, 'G'
       RCALL data_wrt
-	  LDI   R16, 'A'
+	  LDI   R30, 'A'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'M'
+	  LDI   R30, 'M'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'E'
+	  LDI   R30, 'E'
       RCALL data_wrt
       RCALL delay_seconds
 	  ;-------------------
-	  LDI   R16, ' '
+	  LDI   R30, ' '
       RCALL data_wrt
       RCALL delay_seconds
 	  ;-------------------
-	  LDI   R16, 'O'
+	  LDI   R30, 'O'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'V'
+	  LDI   R30, 'V'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'E'
+	  LDI   R30, 'E'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'R'
+	  LDI   R30, 'R'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, '!'
+	  LDI   R30, '!'
       RCALL data_wrt
       RCALL delay_seconds
 	  ;----------------
-      LDI   R16, 0xC0         ;cursor beginning of 2nd line
+      LDI   R30, 0xC0         ;cursor beginning of 2nd line
       RCALL command_wrt
       RCALL delay_ms
 	  ;----------------
-      LDI   R16, 'H'
+      LDI   R30, 'H'
       RCALL data_wrt
       RCALL delay_seconds
-      LDI   R16, 'i'
+      LDI   R30, 'i'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, ' '
+	  LDI   R30, ' '
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'S'
+	  LDI   R30, 'S'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'c'
+	  LDI   R30, 'c'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'o'
+	  LDI   R30, 'o'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'r'
+	  LDI   R30, 'r'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, 'e'
+	  LDI   R30, 'e'
       RCALL data_wrt
       RCALL delay_seconds
-	  LDI   R16, ':'
+	  LDI   R30, ':'
       RCALL data_wrt
       RCALL delay_seconds
 	  RCALL read_EEPROM
 	  RCALL data_wrt
 
-	  LDI   R17, 12           ;wait 3 seconds
+	  LDI   R17, 120           ;wait
+	  
 loop1:RCALL delay_seconds
 	  SBIC PIND,2			  ;check if button is pressed
 	  RCALL MAIN		  ; IF button is pressed jump to next screen
-      DEC   R17
+	  DEC   R17
       BRNE  loop1
+	  RCALL MAIN
 	  RET
 ;========================================================================
 gameplay:
@@ -284,7 +291,8 @@ gameplay:
 	  LDI R23,1<<INT1 ; EDGE TRIGGERED
 	  OUT EIMSK, R23 ; check
 	  SEI ;set I (enable interrupts globally) 
-	  LDI R17,0x15
+	  LDI R17,0x15		 ;keeps offset
+	  LDI R29,0x0		 ;keeps score
 reset:	
 	  LDI R18, 0
 	  
@@ -292,94 +300,107 @@ return:				;subroutine to display message
 	  RCALL generate_top
 	  RCALL delay_seconds
 	  RCALL delay_seconds
-	  INC R18
+	  INC R18		 ;increment location
+	  INC R29		 ;increment score
 	  CP R17,R18	 ;checks if obstacles are clear of screen
 	  BREQ reset	 ;resets counter
 	  SBIC PIND,2			  ;check if button is pressed
 	  RCALL end_game ; IF button is pressed jump to next screen  
 	  RCALL return
 
-	  generate_top:
-	  LDI R16, 0x8F
-	  SUB R16,R18
+generate_top:
+	  LDI R30, 0x8F
+	  SUB R30,R18
+	  RCALL collision
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
+      LDI   R30, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-	  RCALL delay_short
       ;------------------------------------------------------------------
-	  LDI R16, 0x91
-	  SUB R16,R18
+	  LDI R30, 0x91
+	  SUB R30,R18
+	  RCALL collision
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
+      LDI   R30, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-	  RCALL delay_short
       ;------------------------------------------------------------------
-	  LDI R16, 0x92
-	  SUB R16,R18
+	  LDI R30, 0x92
+	  SUB R30,R18
+	  RCALL collision
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
+      LDI   R30, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-	  RCALL delay_short
       ;------------------------------------------------------------------
-	  LDI R16, 0x93
-	  SUB R16,R18
+	  LDI R30, 0x93
+	  SUB R30,R18
+	  RCALL collision
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
+      LDI   R30, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
-	  RCALL delay_short
 	  ;-----------------------------------------------------------------
-	  LDI R16, 0x94
-	  SUB R16,R18
+	  LDI R30, 0x94
+	  SUB R30,R18
 	  RCALL command_wrt
-	  LDI R16, ' '
+	  LDI R30, ' '
 	  RCALL data_wrt
 	  ;-----------------------------------------------------------------
-	  LDI R16, 0x95
-	  SUB R16,R18
+	  LDI R30, 0x95
+	  SUB R30,R18
 	  RCALL command_wrt
-	  LDI R16, ' '
+	  LDI R30, ' '
 	  RCALL data_wrt
 	  ;-----------------------------------------------------------------
 	  RET
 
 generate_bot:
-	  LDI R16, 0xD0
-	  SUB R16,R18
+	  LDI R30, 0xD0
+	  SUB R30,R18
+	  RCALL collision
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
+      LDI   R30, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
       ;----------------------------------------------------------------
-	  LDI R16, 0xD1
-	  SUB R16,R18
+	  LDI R30, 0xD1
+	  SUB R30,R18
+	  RCALL collision
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
+      LDI   R30, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
       ;-----------------------------------------------------------------
-	  LDI R16, 0xD2
-	  SUB R16,R18
+	  LDI R30, 0xD2
+	  SUB R30,R18
+	  RCALL collision
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
+      LDI   R30, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
       ;-----------------------------------------------------------------
-	  LDI R16, 0xD3
-	  SUB R16,R18
+	  LDI R30, 0xD3
+	  SUB R30,R18
+	  RCALL collision
 	  RCALL command_wrt
-      LDI   R16, 0b11111111          ;display characters
+      LDI   R30, 0b11111111          ;display characters
       RCALL data_wrt          ;via data register
       ;-----------------------------------------------------------------
-	  LDI R16, 0xD4
-	  SUB R16,R18
+	  LDI R30, 0xD4
+	  SUB R30,R18
 	  RCALL command_wrt
-	  LDI R16, ' '
+	  LDI R30, ' '
 	  RCALL data_wrt
 	  ;-----------------------------------------------------------------
-	  LDI R16, 0xD5
-	  SUB R16,R18
+	  LDI R30, 0xD5
+	  SUB R30,R18
 	  RCALL command_wrt
-	  LDI R16, ' '
+	  LDI R30, ' '
 	  RCALL data_wrt
 	  ;-----------------------------------------------------------------
 	  RET
+
+collision:
+	  CP R30,R24
+	  BRNE safe
+	  RCALL end_game
+safe:
+	  RET
+
 
 ;========================================================================
 prog_EEPROM:
@@ -392,8 +413,8 @@ l8: SBIC EECR, 1
     LDI   R17, 0x5F         ;low byte of address 005FH
     OUT   EEARH, R18        ;store high byte of address       
     OUT   EEARL, R17        ;store low byte of address
-    ;LDI   R16, 0b11001101   ;byte to be written to EEPROM
-    OUT   EEDR, R16         ;via data reg
+    ;LDI   R30, 0b11001101   ;byte to be written to EEPROM
+    OUT   EEDR, R30         ;via data reg
     SBI   EECR, 2           ;EEMWE = 1
     SBI   EECR, 1           ;EEWE = 1: write byte to EEPROM
     ;----------------------------------------------------------
@@ -404,7 +425,7 @@ l9: SBIC EECR, 1
 read_EEPROM:
     ;----------------
     SBI   EECR, 0           ;EERE = 1: read byte from EEPROM
-    IN    R16, EEDR         ;get byte from data register
+    IN    R30, EEDR         ;get byte from data register
     RET
 	;
 	
@@ -440,17 +461,41 @@ l7: DEC   R22         ;decrement inner loop
     DEC   R20         ;decrement outer loop
     BRNE  l5          ;loop if not zero
     RET               ;return to caller
+
+
 ;----------------------------------------------------------------
+;------------------- Timer1 delay  
+DELAY_1s:  
+	 LDI R20,HIGH (15625-1)  
+	 STS OCR1AH,R20 ;TEMP = $3D (since 15624 = $3D08)  
+	 LDI R20,LOW (15625-1)  
+	 STS OCR1AL,R20 ;OCR1AL = $08 (since 15624 = $3D08)  
+	 LDI R20,0  STS TCNT1H,R20 ;TEMP = 0x00  
+	 STS TCNT1L,R20 ;TCNT1L = 0x00, TCNT1H = TEMP  
+	 LDI R20,0x00 
+	 STS TCCR1A,R20 ;WGM11:10 = 00  
+	 LDI R20,0x5 
+	 STS TCCR1B,R20 ;WGM13:12=00, Normal mode, CS=CLK/1024  
+AGAIN2:
+	 SBIS TIFR1,OCF1A ;if OCF1A is set skip next instruction  
+	 RJMP AGAIN2 
+	 LDI R19,0  
+	 STS TCCR1B,R19 ;stop timer  
+	 STS TCCR1A,R19  
+	 LDI R20,1<<OCF1A  
+	 OUT TIFR1,R20 ;clear OCF1A flag  
+	 RET
+;-----------------------------------------------------------------
 .org $300
 INT1_ISR:
-	MOV R16, R24
+	MOV R30, R24
 	RCALL command_wrt
-	LDI R16, ' '
+	LDI R30, ' '
 	RCALL data_wrt
 	;RCALL delay_seconds
-	MOV R16, R25
+	MOV R30, R25
 	RCALL command_wrt
-	LDI R16, 0b10101011
+	LDI R30, 0b10101011
 	RCALL data_wrt
 	LDI R23, (1<<ISC11)
 	STS EICRA, R23 ;CHECK
