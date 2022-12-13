@@ -2,7 +2,7 @@
 .org 0
 	  JMP RESET
 .org 0x04
-	  JMP INT0_ISR
+	  JMP INT1_ISR
 ;================================================================
 RESET:
 	LDI R23, HIGH(RAMEND)
@@ -204,11 +204,14 @@ l7: DEC   R22         ;decrement inner loop
     RET               ;return to caller
 ;----------------------------------------------------------------
 ;.org $200
-INT0_ISR:
+INT1_ISR:
 	MOV R16, R24
 	RCALL command_wrt
 	LDI R16, ' '
 	RCALL data_wrt
+	;-
+	INC R24
+	INC R25
 	;RCALL delay_seconds
 	MOV R16, R25
 	RCALL command_wrt
@@ -223,4 +226,5 @@ INT0_ISR:
 	MOV R23, R24
 	MOV R24, R25 
 	MOV R25, R23 ;SWAP POSITION
+	;---
 	RET
